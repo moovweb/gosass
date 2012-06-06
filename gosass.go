@@ -7,6 +7,9 @@ package gosass
 #include "sass_interface.h"
 */
 import "C"
+import (
+  "strings"
+)
 
 type Options struct {
   OutputStyle  int
@@ -32,12 +35,15 @@ const (
 func CompileFile(goCtx *FileContext) {
   // set up the underlying C context struct
   cCtx := C.sass_new_file_context()
-  cCtx.input_path           = C.CString(goCtx.InputPath)
-  cCtx.options.output_style = C.int(goCtx.Options.OutputStyle)
+  cCtx.input_path            = C.CString(goCtx.InputPath)
+  cCtx.options.output_style  = C.int(goCtx.Options.OutputStyle)
+  cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
   // call the underlying C compile function to populate the C context
   C.sass_compile_file(cCtx)
   // extract values from the C context to populate the Go context object
   goCtx.OutputString = C.GoString(cCtx.output_string)
   goCtx.ErrorStatus  = int(cCtx.error_status)
   goCtx.ErrorMessage = C.GoString(cCtx.error_message)
+  // don't forget to free the C context!
+  C.sass_free_file_context(cCtx)
 }
