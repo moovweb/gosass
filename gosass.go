@@ -14,16 +14,6 @@ type Options struct {
   // eventually gonna' have things like callbacks and whatnot
 }
 
-/*
-type SourceContext struct {
-  Options
-  SourceString string
-  OutputString string
-  ErrorStatus  int
-  ErrorMessage string
-}
-*/
-
 type FileContext struct {
   Options
   InputPath    string
@@ -39,20 +29,15 @@ const (
   COMPRESSED_STYLE
 )
 
-/*
-func NewSourceContext() (ctx *SourceContext) {
-  // something
-}
-
-func NewFileContext() (ctx *FileContext) {
-  // something
-}
-*/
-
-func CompileFile(ctx *FileContext) string {
-  c_ctx := C.sass_new_file_context()
-  c_ctx.input_path = C.CString("some/path/I/guess")
-  s := C.GoString(c_ctx.input_path)
-  ctx.InputPath = s + "/whatever"
-  return ctx.InputPath
+func CompileFile(goCtx *FileContext) {
+  // set up the underlying C context struct
+  cCtx := C.sass_new_file_context()
+  cCtx.input_path           = C.CString(goCtx.InputPath)
+  cCtx.options.output_style = C.int(goCtx.Options.OutputStyle)
+  // call the underlying C compile function to populate the C context
+  C.sass_compile_file(cCtx)
+  // extract values from the C context to populate the Go context object
+  goCtx.OutputString = C.GoString(cCtx.output_string)
+  goCtx.ErrorStatus  = int(cCtx.error_status)
+  goCtx.ErrorMessage = C.GoString(cCtx.error_message)
 }
