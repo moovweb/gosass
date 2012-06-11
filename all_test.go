@@ -3,6 +3,8 @@ package gosass
 import (
   "runtime"
   "testing"
+  "io/ioutil"
+  "fmt"
 )
 
 func runParallel(testFunc func(chan bool), concurrency int) {
@@ -19,7 +21,9 @@ func runParallel(testFunc func(chan bool), concurrency int) {
 }
 
 const numConcurrentRuns = 200
-const testFileName      = "test.scss"
+// const testFileName1     = "test1.scss"
+// const testFileName2     = "test2.scss"
+// const desiredOutput     = "div {\n  color: black; }\n  div span {\n    color: blue; }\n"
 
 func compileTest(t *testing.T, fileName string) (result string) {
 
@@ -49,10 +53,22 @@ func compileTest(t *testing.T, fileName string) (result string) {
   return result
 }
 
+const numTests = 3 // TO DO: read the test dir and set this dynamically
+
 func TestConcurrent(t *testing.T) {
   testFunc := func(done chan bool) {
     done <- false
-    compileTest(t, testFileName)
+    for i := 1; i <= numTests; i++ {
+      inputFile := fmt.Sprintf("test/test%d.scss", i)
+      result := compileTest(t, inputFile)
+      desiredOutput, err := ioutil.ReadFile(fmt.Sprintf("test/test%d.css", i))
+      if err != nil {
+        t.Error(fmt.Sprintf("ERROR: couldn't read test/test%d.css", i))
+      }
+      if result != string(desiredOutput) {
+        t.Error("ERROR: incorrect output")
+      }
+    }
     done <- true
   }
   runParallel(testFunc, numConcurrentRuns)

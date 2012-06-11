@@ -1,0 +1,17 @@
+@mixin foo($x, $y) {
+  foo-prop: $x $y foofoo;
+}
+
+@function pessimize($num) {
+  @if $num > 0 {
+    @return -$num;
+  }
+  @else {
+    @return $num;
+  }
+}
+
+div {
+  blah: blah;
+  @include foo(42, pessimize(42));
+}

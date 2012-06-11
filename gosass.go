@@ -4,11 +4,13 @@ package gosass
 #cgo LDFLAGS: -L../../clibs/lib -lsass -lstdc++
 #cgo CFLAGS: -I../../clibs/include
 
+#include <stdlib.h>
 #include "sass_interface.h"
 */
 import "C"
 import (
   "strings"
+  "unsafe"
 )
 
 type Options struct {
@@ -25,6 +27,7 @@ type FileContext struct {
   ErrorMessage string
 }
 
+// Constants/enums for the output style.
 const (
   NESTED_STYLE = iota
   EXPANDED_STYLE
@@ -36,8 +39,10 @@ func CompileFile(goCtx *FileContext) {
   // set up the underlying C context struct
   cCtx := C.sass_new_file_context()
   cCtx.input_path            = C.CString(goCtx.InputPath)
+  defer C.free(unsafe.Pointer(cCtx.input_path))
   cCtx.options.output_style  = C.int(goCtx.Options.OutputStyle)
   cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
+  defer C.free(unsafe.Pointer(cCtx.options.include_paths))
   // call the underlying C compile function to populate the C context
   C.sass_compile_file(cCtx)
   // extract values from the C context to populate the Go context object
