@@ -5,7 +5,7 @@ package gosass
 #cgo CFLAGS: -I../../clibs/include
 
 #include <stdlib.h>
-#include "sass_interface.h"
+#include <sass_interface.h>
 */
 import "C"
 import (
