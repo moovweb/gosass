@@ -43,8 +43,9 @@ func CompileFile(goCtx *FileContext) {
   defer C.free(unsafe.Pointer(cCtx.input_path))
   cCtx.options.output_style  = C.int(goCtx.Options.OutputStyle)
   cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
-  cCtx.options.image_path    = C.CString(goCtx.Options.ImagePath)
   defer C.free(unsafe.Pointer(cCtx.options.include_paths))
+  cCtx.options.image_path    = C.CString(goCtx.Options.ImagePath)
+  defer C.free(unsafe.Pointer(cCtx.options.image_path))
   // call the underlying C compile function to populate the C context
   C.sass_compile_file(cCtx)
   // extract values from the C context to populate the Go context object
