@@ -16,6 +16,7 @@ import (
 type Options struct {
   OutputStyle  int
   IncludePaths []string
+  ImagePath    string
   // eventually gonna' have things like callbacks and whatnot
 }
 
@@ -42,6 +43,7 @@ func CompileFile(goCtx *FileContext) {
   defer C.free(unsafe.Pointer(cCtx.input_path))
   cCtx.options.output_style  = C.int(goCtx.Options.OutputStyle)
   cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
+  cCtx.options.image_path    = C.CString(goCtx.Options.ImagePath)
   defer C.free(unsafe.Pointer(cCtx.options.include_paths))
   // call the underlying C compile function to populate the C context
   C.sass_compile_file(cCtx)
