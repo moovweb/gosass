@@ -40,12 +40,9 @@ func CompileFile(goCtx *FileContext) {
   // set up the underlying C context struct
   cCtx := C.sass_new_file_context()
   cCtx.input_path            = C.CString(goCtx.InputPath)
-  defer C.free(unsafe.Pointer(cCtx.input_path))
   cCtx.options.output_style  = C.int(goCtx.Options.OutputStyle)
   cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
-  defer C.free(unsafe.Pointer(cCtx.options.include_paths))
   cCtx.options.image_path    = C.CString(goCtx.Options.ImagePath)
-  defer C.free(unsafe.Pointer(cCtx.options.image_path))
   // call the underlying C compile function to populate the C context
   C.sass_compile_file(cCtx)
   // extract values from the C context to populate the Go context object
@@ -53,5 +50,14 @@ func CompileFile(goCtx *FileContext) {
   goCtx.ErrorStatus  = int(cCtx.error_status)
   goCtx.ErrorMessage = C.GoString(cCtx.error_message)
   // don't forget to free the C context!
+  C.free(unsafe.Pointer(cCtx.input_path))
+  println("freed the input file path string")
+  C.free(unsafe.Pointer(cCtx.options.include_paths))
+  println("freed the include paths")
+  C.free(unsafe.Pointer(cCtx.options.image_path))
+  println("freed the image path string")
+
   C.sass_free_file_context(cCtx)
+  println("freed the file context")
+  println("wrapped up compilation for " + goCtx.InputPath)
 }
