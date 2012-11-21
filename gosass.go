@@ -15,6 +15,7 @@ import (
 
 type Options struct {
 	OutputStyle  int
+	SourceComments bool
 	IncludePaths []string
 	ImagePath    string
 	// eventually gonna' have things like callbacks and whatnot
@@ -42,6 +43,11 @@ func CompileFile(goCtx *FileContext) {
 	cCtx.input_path = C.CString(goCtx.InputPath)
 	defer C.free(unsafe.Pointer(cCtx.input_path))
 	cCtx.options.output_style = C.int(goCtx.Options.OutputStyle)
+	if goCtx.Options.SourceComments {
+		cCtx.options.source_comments = C.int(1)
+	} else {
+		cCtx.options.source_comments = C.int(0)
+	}
 	cCtx.options.include_paths = C.CString(strings.Join(goCtx.Options.IncludePaths, ":"))
 	defer C.free(unsafe.Pointer(cCtx.options.include_paths))
 	cCtx.options.image_path = C.CString(goCtx.Options.ImagePath)
