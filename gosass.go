@@ -25,6 +25,7 @@ type FileContext struct {
 	Options
 	InputPath    string
 	OutputString string
+	ClassesAndIds string
 	ErrorStatus  int
 	ErrorMessage string
 }
@@ -56,6 +57,7 @@ func CompileFile(goCtx *FileContext) {
 	C.sass_compile_file(cCtx)
 	// extract values from the C context to populate the Go context object
 	goCtx.OutputString = C.GoString(cCtx.output_string)
+	goCtx.ClassesAndIds = C.GoString(cCtx.classes_and_ids)
 	goCtx.ErrorStatus = int(cCtx.error_status)
 	goCtx.ErrorMessage = C.GoString(cCtx.error_message)
 	// don't forget to free the C context!
