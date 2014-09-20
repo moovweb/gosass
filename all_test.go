@@ -74,3 +74,34 @@ func TestConcurrent(t *testing.T) {
 	}
 	runParallel(testFunc, numConcurrentRuns)
 }
+
+var testSassFuncs = []struct {
+	name     string
+	context  Context
+	expected string
+}{
+	{name: "image-url test with scheme-less uri path",
+		context: Context{
+			Options: Options{
+				OutputStyle:    COMPRESSED_STYLE,
+				SourceComments: false,
+				IncludePaths:   []string{"//include-root"},
+				ImagePath:      "//image-root"},
+			SourceString: "bg { src: image-url('fonts/fancy.otf?whynot');}"},
+		expected: "bg{src:url(\"//image-root/fonts/fancy.otf?whynot\");}"}}
+
+func TestSassFunctions(t *testing.T) {
+	for _, tobj := range testSassFuncs {
+		Compile(&tobj.context)
+
+		if tobj.context.ErrorStatus != 0 {
+			if tobj.context.ErrorMessage != "" {
+				t.Error("ERROR: ", tobj.context.ErrorMessage)
+			} else {
+				t.Error("UNKNOWN ERROR")
+			}
+		} else if tobj.context.OutputString != tobj.expected {
+			t.Errorf("Test case %s failed.  Expected \"%s\" but received \"%s\".", tobj.name, tobj.expected, tobj.context.OutputString)
+		}
+	}
+}
