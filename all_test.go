@@ -88,7 +88,17 @@ var testSassFuncs = []struct {
 				IncludePaths:   []string{"//include-root"},
 				ImagePath:      "//image-root"},
 			SourceString: "bg { src: image-url('fonts/fancy.otf?whynot');}"},
-		expected: "bg{src:url(\"//image-root/fonts/fancy.otf?whynot\");}"}}
+		expected: "bg{src:url(\"//image-root/fonts/fancy.otf?whynot\");}"},
+	{name: "image-url test with relative uri path",
+		context: Context{
+			Options: Options{
+				OutputStyle:    COMPRESSED_STYLE,
+				SourceComments: false,
+				IncludePaths:   []string{"//include-root"},
+				ImagePath:      "/image-root"},
+			SourceString: "bg { src: image-url('fonts/fancy.otf?whynot');}"},
+		expected: "bg{src:url(\"/image-root/fonts/fancy.otf?whynot\");}"},
+}
 
 func TestSassFunctions(t *testing.T) {
 	for _, tobj := range testSassFuncs {
