@@ -1,8 +1,8 @@
 package gosass
 
 /*
-#cgo LDFLAGS: -L../../clibs/lib -lsass -lstdc++
-#cgo CFLAGS: -I../../clibs/include
+#cgo pkg-config: libsass
+#cgo LDFLAGS: -lstdc++
 
 #include <stdlib.h>
 #include <sass_interface.h>
@@ -14,10 +14,10 @@ import (
 )
 
 type Options struct {
-	OutputStyle  int
+	OutputStyle    int
 	SourceComments bool
-	IncludePaths []string
-	ImagePath    string
+	IncludePaths   []string
+	ImagePath      string
 	// eventually gonna' have things like callbacks and whatnot
 }
 
