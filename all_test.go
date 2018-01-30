@@ -27,7 +27,6 @@ const numConcurrentRuns = 200
 // const desiredOutput     = "div {\n  color: black; }\n  div span {\n    color: blue; }\n"
 
 func compileTest(t *testing.T, fileName string) (result string) {
-
 	ctx := FileContext{
 		Options: Options{
 			OutputStyle:  NESTED_STYLE,
@@ -43,31 +42,32 @@ func compileTest(t *testing.T, fileName string) (result string) {
 
 	if ctx.ErrorStatus != 0 {
 		if ctx.ErrorMessage != "" {
-			t.Error("ERROR: ", ctx.ErrorMessage)
+			t.Fatal("ERROR: ", ctx.ErrorMessage)
 		} else {
-			t.Error("UNKNOWN ERROR")
+			t.Fatalf("Unknown error, status %d", ctx.ErrorStatus)
 		}
-	} else {
-		result = ctx.OutputString
 	}
 
-	return result
+	return ctx.OutputString
 }
 
 const numTests = 3 // TO DO: read the test dir and set this dynamically
 
+// NOTE: This test sometimes fails or deadlocks due to concurrency issues. It is unclear if
+// the test was *meant* to test concurrent behavior of gosass or that it was simply
+// a way to concurrently (and thus faster) test gosass.
 func TestConcurrent(t *testing.T) {
 	testFunc := func(done chan bool) {
 		done <- false
 		for i := 1; i <= numTests; i++ {
 			inputFile := fmt.Sprintf("test/test%d.scss", i)
-			result := compileTest(t, inputFile)
 			desiredOutput, err := ioutil.ReadFile(fmt.Sprintf("test/test%d.css", i))
 			if err != nil {
-				t.Error(fmt.Sprintf("ERROR: couldn't read test/test%d.css", i))
+				t.Fatalf("ERROR: couldn't read test/test%d.css: %v", i, err)
 			}
+			result := compileTest(t, inputFile)
 			if result != string(desiredOutput) {
-				t.Error("ERROR: incorrect output")
+				t.Fatalf("ERROR: incorrect output [%q] != expected [%q]", result, string(desiredOutput))
 			}
 		}
 		done <- true
@@ -106,12 +106,12 @@ func TestSassFunctions(t *testing.T) {
 
 		if tobj.context.ErrorStatus != 0 {
 			if tobj.context.ErrorMessage != "" {
-				t.Error("ERROR: ", tobj.context.ErrorMessage)
+				t.Fatal("ERROR: ", tobj.context.ErrorMessage)
 			} else {
-				t.Error("UNKNOWN ERROR")
+				t.Fatalf("Unknown error, status %d", tobj.context.ErrorStatus)
 			}
 		} else if tobj.context.OutputString != tobj.expected {
-			t.Errorf("Test case %s failed.  Expected \"%s\" but received \"%s\".", tobj.name, tobj.expected, tobj.context.OutputString)
+			t.Fatalf("Test case %s failed.  Expected \"%s\" but received \"%s\".", tobj.name, tobj.expected, tobj.context.OutputString)
 		}
 	}
 }
